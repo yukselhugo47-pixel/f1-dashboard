@@ -6,6 +6,13 @@ names, tyre-compound names (SOFT/MEDIUM/HARD, ...) and "Safety Car" / "Virtual
 Safety Car" are FastF1/F1 domain vocabulary used as-is in both languages, so
 they are intentionally never routed through t().
 """
+
+import sys as _sys
+from pathlib import Path as _Path
+_ROOT = _Path(__file__).resolve().parent.parent
+if str(_ROOT) not in _sys.path:
+    _sys.path.insert(0, str(_ROOT))
+
 import streamlit as st
 
 LANG_KEY = "lang"
