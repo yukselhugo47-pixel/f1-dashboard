@@ -10,7 +10,7 @@ import streamlit as st
 
 from app import ai_commentary, media, theme
 from app.i18n import t, get_lang
-from data import processing as proc
+from data import loader, processing as proc
 
 SPEED_COLORSCALE = [
     [0.0, "#2B2B30"],
@@ -23,6 +23,8 @@ SPEED_COLORSCALE = [
 
 def render_track_map(session):
     st.markdown(theme.section_title(t("map.title")), unsafe_allow_html=True)
+    with st.spinner(t("map.loading_telemetry")):
+        loader.ensure_telemetry(session)
 
     drivers = proc.get_driver_abbreviations(session)
     if not drivers:

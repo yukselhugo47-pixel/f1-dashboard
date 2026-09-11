@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 
 from app import ai_commentary, media, theme
 from app.i18n import t, get_lang
-from data import processing as proc
+from data import loader, processing as proc
 
 
 def _channels():
@@ -26,6 +26,8 @@ def _channels():
 
 def render_telemetry(session):
     st.markdown(theme.section_title(t("tel.title")), unsafe_allow_html=True)
+    with st.spinner(t("map.loading_telemetry")):
+        loader.ensure_telemetry(session)
 
     drivers = proc.get_driver_abbreviations(session)
     if len(drivers) < 2:

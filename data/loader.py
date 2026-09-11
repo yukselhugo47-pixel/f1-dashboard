@@ -138,10 +138,19 @@ def get_session_start_local(year: int, gp: str, session_code: str) -> pd.Timesta
     return None
 
 
-@st.cache_resource(show_spinner="Chargement des données FastF1 (télémétrie, tours, résultats)...", ttl=3600 * 24)
+@st.cache_resource(show_spinner="Chargement des données FastF1 (tours, résultats)...", ttl=3600 * 24)
 def _get_session_cached(year: int, gp: str, session_code: str):
     session = fastf1.get_session(year, gp, session_code)
-    session.load(laps=True, telemetry=True, weather=True, messages=True)
+    # Telemetry deliberately excluded here: it's by far the heaviest fetch
+    # (car + position data for every driver, every lap) and only 3 of the
+    # 9 tabs actually need it. Loading it eagerly for every session view
+    # made the app unusable on resource-constrained free hosting (Render's
+    # free tier in particular) - see `ensure_telemetry` below, called only
+    # by the tabs that need it. FastF1's own docs note that splitting the
+    # load can very slightly reduce cross-referenced data corrections
+    # versus loading everything in one call; accepted as the right
+    # trade-off given the alternative was the app not working at all.
+    session.load(laps=True, telemetry=False, weather=True, messages=True)
     return session
 
 
@@ -152,12 +161,13 @@ def _get_session_live(year: int, gp: str, session_code: str, refresh_key: tuple)
     # (year, gp, session) combination was requested.
     with fastf1.Cache.disabled():
         session = fastf1.get_session(year, gp, session_code)
-        session.load(laps=True, telemetry=True, weather=True, messages=True)
+        session.load(laps=True, telemetry=False, weather=True, messages=True)
     return session
 
 
 def get_session(year: int, gp: str, session_code: str, force_token: int = 0):
-    """Load a FastF1 session with laps, telemetry and results populated.
+    """Load a FastF1 session with laps and results populated (telemetry is
+    loaded on demand - see `ensure_telemetry`).
 
     Historical sessions are cached indefinitely (immutable data, cheap
     disk-cache reloads via FastF1 itself). A session detected as currently
@@ -171,6 +181,17 @@ def get_session(year: int, gp: str, session_code: str, force_token: int = 0):
         bucket = int(time.time() // LIVE_REFRESH_SECONDS)
         return _get_session_live(year, gp, session_code, (bucket, force_token))
     return _get_session_cached(year, gp, session_code)
+
+
+def ensure_telemetry(session) -> None:
+    """Load telemetry (car + position data) into an already-loaded session,
+    if it isn't already there. Mutates `session` in place - safe to call
+    from every tab that needs telemetry; the second and later calls for the
+    same session object are near-instant no-ops."""
+    if getattr(session, "_telemetry_ensured", False):
+        return
+    session.load(laps=False, telemetry=True, weather=False, messages=False)
+    session._telemetry_ensured = True
 
 
 def session_is_loadable(year: int, gp: str, session_code: str) -> tuple[bool, str]:

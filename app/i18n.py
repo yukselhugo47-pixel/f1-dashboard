@@ -91,6 +91,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cmp.sectors_title": "Meilleur temps par secteur",
         # Track map
         "map.title": "Carte du circuit — vitesse",
+        "map.loading_telemetry": "Chargement de la télémétrie (peut prendre un moment sur cette session)...",
         "map.no_laps": "Pas de données de tour disponibles.",
         "map.driver": "Pilote",
         "map.no_position": "Données de position indisponibles pour {driver} sur cette session.",
@@ -234,6 +235,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cmp.no_sectors": "Sector times unavailable.",
         "cmp.sectors_title": "Best sector times",
         "map.title": "Track map — speed",
+        "map.loading_telemetry": "Loading telemetry (can take a moment for this session)...",
         "map.no_laps": "No lap data available.",
         "map.driver": "Driver",
         "map.no_position": "Position data unavailable for {driver} in this session.",

@@ -10,7 +10,7 @@ import streamlit as st
 
 from app import ai_commentary, media, theme
 from app.i18n import t, get_lang
-from data import processing as proc
+from data import loader, processing as proc
 
 
 def render_driver_comparison(session):
@@ -71,6 +71,8 @@ def render_driver_comparison(session):
 
     with col_delta:
         with st.container(border=True):
+            with st.spinner(t("map.loading_telemetry")):
+                loader.ensure_telemetry(session)
             delta_df = proc.get_cumulative_delta(session, drv1, drv2)
             if delta_df.empty:
                 st.info(t("cmp.no_delta"))
